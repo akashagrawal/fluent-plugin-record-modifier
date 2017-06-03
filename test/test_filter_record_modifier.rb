@@ -136,4 +136,32 @@ class RecordModifierFilterTest < Test::Unit::TestCase
 
     assert_equal [{"k1" => 'v', "k2" => 'v'}], d.filtered_as_array.map(&:last)
   end
+
+  def test_remove_paths
+    d = create_driver %[
+      type record_modifier
+
+      remove_path b.b1.b1b1
+    ]
+
+    d.run do
+      d.emit("a"=>1, "b"=>{"b1"=>{"b1b1"=>22, "b1b2"=>33}, "inner"=>22})
+    end
+
+    assert_equal [{"a"=>1, "b"=>{"b1"=>{"b1b2"=>33}, "inner"=>22}}], d.filtered_as_array.map { |e| e.last }
+  end
+
+  def test_remove_multiple_paths
+    d = create_driver %[
+      type record_modifier
+
+      remove_path b.b1.b1b1, a, b1
+    ]
+
+    d.run do
+      d.emit("a"=>1, "b"=>{"b1"=>{"b1b1"=>22, "b1b2"=>33}, "inner"=>22})
+    end
+
+    assert_equal [{"b"=>{"b1"=>{"b1b2"=>33}, "inner"=>22}}], d.filtered_as_array.map { |e| e.last }
+  end
 end

@@ -19,6 +19,16 @@ You can remove it by using `remove_keys` parameter.
 This option is exclusive with `whitelist_keys`.
 DESC
 
+    config_param :remove_path, :string, default: nil,
+                 desc: <<-DESC
+The logs include needless record keys in some cases.
+You can remove it by using `remove_path` parameter.
+This option is exclusive with `remove_keys` as the later
+is only for root level keys. `remove_path` can also be used
+for removing root level keys but this is not exclusive with
+`whitelist_keys`
+DESC
+
     config_param :whitelist_keys, :string, default: nil,
                  desc: <<-DESC
 Specify `whitelist_keys` to remove all unexpected keys and values from events.
@@ -26,7 +36,7 @@ Modified events will have only specified keys (if exist in original events).
 This option is exclusive with `remove_keys`.
 DESC
 
-    BUILTIN_CONFIGURATIONS = %W(type @type log_level @log_level id @id char_encoding remove_keys whitelist_keys)
+    BUILTIN_CONFIGURATIONS = %W(type @type log_level @log_level id @id char_encoding remove_keys whitelist_keys remove_path)
 
     def configure(conf)
       super
@@ -79,6 +89,10 @@ DESC
         @whitelist_keys = @whitelist_keys.split(',').map(&:strip)
       end
 
+      if @remove_path
+        @remove_path = @remove_path.split(',').map(&:strip)
+      end
+
       # Collect DynamicExpander related garbage instructions
       GC.start
     end
@@ -102,6 +116,17 @@ DESC
             modified[k] = v if @whitelist_keys.include?(k)
           end
           record = modified
+        end
+
+        if @remove_path
+          @remove_path.each { |path|
+            begin
+              path = path.split '.'
+              leaf = path.pop
+              path.inject(record) {|h, el| h[el]}.delete leaf
+            rescue
+            end
+          }        
         end
 
         record = change_encoding(record) if @char_encoding

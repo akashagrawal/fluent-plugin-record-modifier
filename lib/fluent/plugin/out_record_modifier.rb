@@ -1,4 +1,4 @@
-require 'fluent/output'
+   'fluent/output'
 
 module Fluent
   class RecordModifierOutput < Output
@@ -22,6 +22,16 @@ You can remove it by using `remove_keys` parameter.
 This option is exclusive with `whitelist_keys`.
 DESC
 
+    config_param :remove_path, :string, default: nil,
+                 desc: <<-DESC
+The logs include needless record keys in some cases.
+You can remove it by using `remove_path` parameter.
+This option is exclusive with `remove_keys` as the later
+is only for root level keys. `remove_path` can also be used
+for removing root level keys but this is not exclusive with
+`whitelist_keys`
+DESC
+
     config_param :whitelist_keys, :string, default: nil,
                  desc: <<-DESC
 Specify `whitelist_keys` to remove all unexpected keys and values from events.
@@ -31,7 +41,7 @@ DESC
 
     include SetTagKeyMixin
 
-    BUILTIN_CONFIGURATIONS = %W(type tag include_tag_key tag_key char_encoding remove_keys whitelist_keys)
+    BUILTIN_CONFIGURATIONS = %W(type tag include_tag_key tag_key char_encoding remove_keys whitelist_keys remove_path)
 
     def configure(conf)
       super
@@ -67,6 +77,10 @@ DESC
         @remove_keys = @remove_keys.split(',').map(&:strip)
       elsif @whitelist_keys
         @whitelist_keys = @whitelist_keys.split(',').map(&:strip)
+      end
+
+      if @remove_path
+        @remove_path = @remove_path.split(',').map(&:strip)
       end
     end
 
@@ -108,6 +122,17 @@ DESC
           modified[k] = v if @whitelist_keys.include?(k)
         end
         record = modified
+      end
+
+      if @remove_path
+        @remove_path.each { |path|
+          begin
+            path = path.split '.'
+            leaf = path.pop
+            path.inject(record) {|h, el| h[el]}.delete leaf
+          rescue
+          end
+        }
       end
 
       record = change_encoding(record) if @char_encoding

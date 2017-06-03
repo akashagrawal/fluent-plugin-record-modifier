@@ -127,6 +127,33 @@ then you got new record like below:
 {"key1":"hoge", "key2":"foo"}
 ```
 
+### remove_path
+
+The logs include needless record keys in some cases.
+`remove_keys` only remove root level keys.
+You can remove it by using `remove_path` parameter.
+
+```conf
+<filter pattern>
+  @type record_modifier
+
+  # remove key1.key2 and key3 keys from record
+  remove_path key1.key2, key3
+</filter>
+```
+
+If following record is passed:
+
+```js
+{"key1": {"key2":"foo", "key12": "baz"}, "key3":"bar"}
+```
+
+then you got new record like below:
+
+```js
+{"key1":{"key12": "baz"}}
+```
+
 ### record_modifier output
 
 In v0.10, you can use `record_modifier` output to emulate filter. `record_modifier` output doesn't support `<record>` way.
