@@ -1,3 +1,7 @@
+Release 0.6.0 - 2017/06/03
+
+  * Added remove_path method to delete keys inside json.
+
 Release 0.5.0 - 2016/08/23
 
   * Remove fluent-plugin-config-placeholder dependency
