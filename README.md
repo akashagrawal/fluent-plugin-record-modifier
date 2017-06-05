@@ -130,8 +130,8 @@ then you got new record like below:
 ### remove_path
 
 The logs include needless record keys in some cases.
-`remove_keys` only remove root level keys.
-You can remove it by using `remove_path` parameter.
+`remove_keys` only remove root level keys.One can 
+remove non-root by using `remove_path` parameter.
 
 ```conf
 <filter pattern>
@@ -153,6 +153,10 @@ then you got new record like below:
 ```js
 {"key1":{"key12": "baz"}}
 ```
+
+Though `remove_path` can remove root level keys as well but 
+`remove_keys` is not depricated for backward compatiblities.
+It's NOT exclusive with `remove_keys` or `whitelist_keys`
 
 ### record_modifier output
 
