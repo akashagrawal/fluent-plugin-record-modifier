@@ -126,7 +126,7 @@ DESC
               path.inject(record) {|h, el| h[el]}.delete leaf
             rescue
             end
-          }        
+          }         
         end
 
         record = change_encoding(record) if @char_encoding
